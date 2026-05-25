@@ -103,7 +103,11 @@ router.get("/delta", async (req, res) => {
     updatedAt: { $gt: since },
   }).select("_id title amount month method");
 
-  res.json({ items, timestamp: currentTimestamp });
+  // Fetch all active MongoDB _ids in the collection to support deletion reconciliation
+  const allActiveDocs = await Expense.find({}).select("_id");
+  const activeIds = allActiveDocs.map(doc => String(doc._id));
+
+  res.json({ items, timestamp: currentTimestamp, activeIds });
 });
 
 export default router;
